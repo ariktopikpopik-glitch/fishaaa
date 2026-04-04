@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-BOT_TOKEN = "7972485896:AAGDUO9cKu4qMdoa7dC87-Ybq1kUoPZNF_A"
+BOT_TOKEN = "8322289308:AAEuUETn72fgvS0waidzVkjWIuJ8dhIe8Ts"
 OWNER_ID = 208405935
 
 def send_telegram(text):
